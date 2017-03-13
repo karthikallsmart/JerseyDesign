@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ViewController : UIViewController<UITableViewDelegate,UITableViewDataSource>
+@interface ViewController : UIViewController<UITableViewDelegate,UITableViewDataSource,UIGestureRecognizerDelegate>
 
 @property (strong, nonatomic) IBOutlet UIView *vwForImage;
 @property (strong, nonatomic) IBOutlet UITableView *tableVw;
