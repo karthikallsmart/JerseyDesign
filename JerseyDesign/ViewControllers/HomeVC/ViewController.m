@@ -10,11 +10,16 @@
 #import "TGDrawSvgPathView.h"
 #import <QuartzCore/QuartzCore.h>
 #import "TableViewCell.h"
+#import "CollectionViewCell.h"
+#import "AppDelegate.h"
+#import "KTCenterFlowLayout.h"
 @interface ViewController ()
 {
     BOOL isNextSelected,isFirstTimeLoad;
     NSInteger indexValue,countForPatterns;;
-    NSMutableArray *arrayForImages,*arrayForColors;
+    NSMutableArray *arrayForImages,*arrayForColors,*arrayForThumbnails,*arrayForBackImages,*arrayForCollar,*arrayForCollarThumbnails;
+    float firstX,firstY;
+    UILabel *myLabel ;
 }
 @property (nonatomic, strong) CAShapeLayer* shapeView;
 @property (nonatomic, strong) TGDrawSvgPathView* tgView;
@@ -49,12 +54,44 @@
     
     arrayForImages=[[NSMutableArray alloc] init];
     
-    [arrayForImages addObject:@"07_mask.png"];
-    [arrayForImages addObject:@"03_pattern.png"];
-    [arrayForImages addObject:@"04_pattern.png"];
-    [arrayForImages addObject:@"05_pattern"];
-    [arrayForImages addObject:@"06_collar_1.png"];
+    [arrayForImages addObject:@"01_mask_front.png"];
+    [arrayForImages addObject:@"03_pattern_front.png"];
+    [arrayForImages addObject:@"04_pattern_front.png"];
+    [arrayForImages addObject:@"05_pattern_front.png"];
+    [arrayForImages addObject:@"06_collar_1_front.png"];
 
+    arrayForBackImages=[[NSMutableArray alloc] init];
+    
+    [arrayForBackImages addObject:@"01_mask_back.png"];
+    [arrayForBackImages addObject:@""];
+    [arrayForBackImages addObject:@"04_pattern_back.png"];
+    [arrayForBackImages addObject:@"05_pattern_back.png"];
+    [arrayForBackImages addObject:@"06_collar_back.png"];
+    
+    arrayForThumbnails=[[NSMutableArray alloc] init];
+//    [arrayForThumbnails addObject:@"02_body_thumb.png"];
+//    [arrayForThumbnails addObject:@"03_pattern_thumb.png"];
+//    [arrayForThumbnails addObject:@"04_pattern_thumb.png"];
+//    [arrayForThumbnails addObject:@"05_pattern_thumb.png"];
+//    [arrayForThumbnails addObject:@"06_collar_1_thumb.png"];
+    
+    [arrayForThumbnails addObject:@"01_body_thumb.png"];
+    [arrayForThumbnails addObject:@"02_pattern1_thumb.png"];
+    [arrayForThumbnails addObject:@"02_pattern2_thumb.png"];
+    [arrayForThumbnails addObject:@"02_pattern3_thumb.png"];
+    [arrayForThumbnails addObject:@"02_collar1_thumb.png"];
+    
+    arrayForCollarThumbnails=[[NSMutableArray alloc] init];
+    
+    [arrayForCollarThumbnails addObject:@"02_collar1_thumb.png"];
+    [arrayForCollarThumbnails addObject:@"02_collar2_thumb.png"];
+    [arrayForCollarThumbnails addObject:@"02_collar3_thumb.png"];
+    
+    arrayForCollar=[[NSMutableArray alloc] init];
+    
+    [arrayForCollar addObject:@"06_collar_1_front.png"];
+    [arrayForCollar addObject:@"06_collar_2_front.png"];
+    [arrayForCollar addObject:@"06_collar_3_front.png"];
     
     arrayForColors=[[NSMutableArray alloc] init];
     [arrayForColors addObject:[UIColor lightGrayColor]];
@@ -90,7 +127,35 @@
     
     swipeLeft.delegate=self;
     swipeRight.delegate=self;
+    
+    
+    _imgVwForThumbnail.image=[UIImage imageNamed:[arrayForThumbnails objectAtIndex:0]];
+    _imgVwForThumbnail.contentMode=UIViewContentModeScaleAspectFit;
+    _imgVwForThumbnail.layer.borderColor=[UIColor lightGrayColor].CGColor;
+    _imgVwForThumbnail.layer.borderWidth=1.0;
+    _imgVwForThumbnail.layer.cornerRadius=5;
+    _imgVwForThumbnail.layer.masksToBounds=YES;
+    
+    if (IS_IPHONE_4) {
+        _widthOfImgVwThumb.constant = 50;
+        _heightOfImgVwThumb.constant = 50;
+    }
+    
+    _collectionVw.delegate = self;
+    _collectionVw.dataSource = self;
+    _collectionVw.backgroundColor=[UIColor whiteColor];
+    
+    KTCenterFlowLayout *layout = [KTCenterFlowLayout new];
+    layout.minimumInteritemSpacing = 10.f;
+    layout.minimumLineSpacing = 10.f;
+    
+    _collectionVw.collectionViewLayout = layout;
+    //[[UICollectionViewController alloc] initWithCollectionViewLayout:layout];
+    
+    _collectionVw.hidden = YES;
+    _btnAddText.hidden = YES;
 }
+#pragma mark - SwipeGesture
 
 -(void)handleSwipe:(UISwipeGestureRecognizer*)gesture{
 
@@ -106,6 +171,7 @@
              [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
             [self.vwForImage.layer addAnimation:animation forKey:kCATransition];
          countForPatterns++;
+            _imgVwForThumbnail.image=[UIImage imageNamed:[arrayForThumbnails objectAtIndex:countForPatterns]];
         }
     }else if (gesture.direction == UISwipeGestureRecognizerDirectionRight){
         
@@ -120,10 +186,21 @@
              [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
             [self.vwForImage.layer addAnimation:animation forKey:kCATransition];
             countForPatterns--;
+            _imgVwForThumbnail.image=[UIImage imageNamed:[arrayForThumbnails objectAtIndex:countForPatterns]];
         }
     }
+    
+    indexValue=countForPatterns;
+    
+    if (indexValue == arrayForThumbnails.count-1) {
+        _collectionVw.hidden = NO;
+        _btnAddText.hidden = NO;
+    }else{
+        _collectionVw.hidden = YES;
+        _btnAddText.hidden = YES;
+    }
 }
-
+#pragma mark -
 - (UIColor *)averageColor:(UIImage*)img {
     
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
@@ -206,7 +283,7 @@
         indexValue=1;
     }
 }
-
+#pragma mark - Color Button Actions
 -(void)onClickBlue{
     [self setColor:[UIColor blueColor]];
 }
@@ -246,45 +323,15 @@
 //    }
     _vwForImage.layer.sublayers=nil;
     [arrayForColors replaceObjectAtIndex:indexValue withObject:color];
-    [self setLayers:color];
+    
+    if (_btnForRotate.tag==0) {
+            [self setLayers:color];
+    }else{
+            [self setBackLayers:color];
+    }
 }
 
-//- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
-//    for (UITouch *touch in touches) {
-//        CGPoint touchLocation = [touch locationInView:_tgView];
-//        for (id sublayer in _tgView.layer.sublayers) {
-//            if ([sublayer isKindOfClass:[CAShapeLayer class]]) {
-//                CAShapeLayer *shapeLayer = sublayer;
-//                if (CGPathContainsPoint(shapeLayer.path, 0, touchLocation, YES)) {
-//                    indexValue=[_tgView.layer.sublayers indexOfObject:sublayer];
-//                }
-//            } else {
-//                CALayer *layer = sublayer;
-//                if (CGRectContainsPoint(layer.frame, touchLocation)) {
-//                }
-//            }
-//        }
-//    }
-    
-    //for (UITouch *touch in touches) {
-//        CGPoint touchLocation = [touch locationInView:_vwForImage];
-//        for (id sublayer in _vwForImage.layer.sublayers) {
-//            if ([sublayer isKindOfClass:[CAShapeLayer class]]) {
-//                CAShapeLayer *shapeLayer = sublayer;
-                
-//                if (CGRectContainsPoint(shapeLayer.frame, touchLocation)) {
-                    //  indexValue=[_vwForImage.layer.sublayers indexOfObject:sublayer];
-//                    NSLog(@"Got it===%i",indexValue);
-//                }
-//            } else {
-//                CALayer *layer = sublayer;
-//                if (CGRectContainsPoint(layer.frame, touchLocation)) {
-//                }
-//            }
-//        }
-//    }
-//}
-
+#pragma mark - UITableView
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     return arrayForImages.count;
 }
@@ -296,8 +343,6 @@
         cell=[[TableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
     }
     cell.imgVw.image=[UIImage imageNamed:[arrayForImages objectAtIndex:indexPath.row]];
-   // cell.selectionStyle=UITableViewCellSelectionStyleNone;
-    //237,237,238
     cell.backgroundColor=[UIColor colorWithRed:(237/255.0) green:(237/255.0) blue:(238/255.0) alpha:1.0];
     
     cell.imgVw.layer.borderColor=[UIColor blackColor].CGColor;
@@ -309,18 +354,73 @@
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     indexValue=indexPath.row;
 }
+#pragma mark - UICollectionViewDataSource
 
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView{
+    return 1;
+}
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section{
+    return arrayForCollarThumbnails.count;
+}
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
+    
+    CollectionViewCell *cell = [self.collectionVw dequeueReusableCellWithReuseIdentifier:@"Cell" forIndexPath:indexPath];
+    
+    cell.backgroundColor=[UIColor whiteColor];
+    cell.imgVw.image=[UIImage imageNamed:[arrayForCollarThumbnails objectAtIndex:indexPath.row]];
+    cell.imgVw.contentMode=UIViewContentModeScaleAspectFit;
+    cell.vwForBg.layer.borderColor=[UIColor lightGrayColor].CGColor;
+    cell.vwForBg.layer.borderWidth=1.0;
+    cell.vwForBg.layer.cornerRadius=cell.vwForBg.frame.size.height/2;
+    cell.vwForBg.layer.masksToBounds=YES;
+    return cell;
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
+ 
+    NSString *imgName=[arrayForCollar objectAtIndex:indexPath.row];
+    NSString *imgThumb=[arrayForCollarThumbnails objectAtIndex:indexPath.row];
+    
+    [arrayForImages replaceObjectAtIndex:[arrayForImages count]-1 withObject:imgName];
+    
+    [arrayForThumbnails replaceObjectAtIndex:[arrayForThumbnails count]-1 withObject:imgThumb];
+    if (_btnForRotate.tag == 0) {
+        [self setLayers:[UIColor lightGrayColor]];
+    }else{
+        [self setBackLayers:[UIColor lightGrayColor]];
+    }
+    
+    _imgVwForThumbnail.image=[UIImage imageNamed:[arrayForThumbnails objectAtIndex:countForPatterns]];
+}
+
+-(void)collectionView:(UICollectionView *)collectionView didDeselectItemAtIndexPath:(NSIndexPath *)indexPath{
+   
+}
+
+
+- (CGSize)collectionView:(UICollectionView *)collectionView
+                  layout:(UICollectionViewLayout *)collectionViewLayout
+  sizeForItemAtIndexPath:(NSIndexPath *)indexPath{
+    
+    CGSize retVal;
+    retVal.width = collectionView.frame.size.height;
+    retVal.height = collectionView.frame.size.height;
+    return retVal;
+}
+#pragma mark -
 -(void)setLayers:(UIColor*)color{
     
     CGFloat widthOfVw=self.view.frame.size.width-40;
     CAShapeLayer *sublayer = [[CAShapeLayer alloc] init];
     
-    if (indexValue == 0) {
-        sublayer.backgroundColor = color.CGColor;
-    }else{
-        UIColor *color=[arrayForColors objectAtIndex:0];
-        sublayer.backgroundColor = color.CGColor;
-    }
+//    if (indexValue == 0) {
+//        sublayer.backgroundColor = color.CGColor;
+//    }else{
+        UIColor *color1=[arrayForColors objectAtIndex:0];
+        sublayer.backgroundColor = color1.CGColor;
+//    }
     
     UIImage *image=[UIImage imageNamed:[arrayForImages objectAtIndex:0]];
     sublayer.contents = (id) image.CGImage;
@@ -335,12 +435,12 @@
         image=[UIImage imageNamed:[arrayForImages objectAtIndex:i+1]];
         newImage = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
         UIGraphicsBeginImageContextWithOptions(image.size, NO, newImage.scale);
-        if (indexValue == i+1) {
-                 [color set];
-        }else{
-            UIColor *color=[arrayForColors objectAtIndex:i+1];
-            [color set];
-        }
+        //if (indexValue == i+1) {
+                // [color set];
+        //}else{
+            UIColor *color1=[arrayForColors objectAtIndex:i+1];
+            [color1 set];
+        //}
         [newImage drawInRect:CGRectMake(0, 0, image.size.width, image.size.height)];
         newImage = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
@@ -352,9 +452,99 @@
    // isFirstTimeLoad=NO;
 }
 
+-(void)setBackLayers:(UIColor*)color{
+    
+    CGFloat widthOfVw=self.view.frame.size.width-40;
+    CAShapeLayer *sublayer = [[CAShapeLayer alloc] init];
+    
+//    if (indexValue == 0) {
+//        sublayer.backgroundColor = color.CGColor;
+//    }else{
+        UIColor *color1=[arrayForColors objectAtIndex:0];
+        sublayer.backgroundColor = color1.CGColor;
+//    }
+    
+    UIImage *image=[UIImage imageNamed:[arrayForBackImages objectAtIndex:0]];
+    sublayer.contents = (id) image.CGImage;
+    sublayer.frame = CGRectMake(0, 0, widthOfVw, widthOfVw);
+    [self.vwForImage.layer addSublayer:sublayer];
+    
+    for (char i=0;i<arrayForBackImages.count-1;i++) {
+        
+        CAShapeLayer *sublayer2 = [[CAShapeLayer alloc] init];
+        UIImage *image;
+        UIImage *newImage;
+        image=[UIImage imageNamed:[arrayForBackImages objectAtIndex:i+1]];
+        newImage = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        UIGraphicsBeginImageContextWithOptions(image.size, NO, newImage.scale);
+//        if (indexValue == i+1) {
+//            [color set];
+//        }else{
+            UIColor *color1=[arrayForColors objectAtIndex:i+1];
+            [color1 set];
+        //}
+        [newImage drawInRect:CGRectMake(0, 0, image.size.width, image.size.height)];
+        newImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+        
+        sublayer2.contents = (id)newImage.CGImage;
+        sublayer2.frame = CGRectMake(0, 0, widthOfVw, widthOfVw);
+        [self.vwForImage.layer addSublayer:sublayer2];
+    }
+    // isFirstTimeLoad=NO;
+}
+
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
 
+- (IBAction)onClickRotate:(UIButton *)sender {
+    
+    [UIView beginAnimations:@"Flip" context:nil];
+    [UIView setAnimationDuration:1];
+    [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+    
+    if (sender.tag == 0) {
+        [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromRight forView:self.vwForImage cache:YES];
+        sender.tag=1;
+        [self setBackLayers:[UIColor lightGrayColor]];
+    }else if (sender.tag == 1){
+         [UIView setAnimationTransition:UIViewAnimationTransitionFlipFromLeft forView:self.vwForImage cache:YES];
+        sender.tag=0;
+        [self setLayers:[UIColor lightGrayColor]];
+    }
+    
+    [UIView commitAnimations];
+}
+
+- (IBAction)onClickAddText:(UIButton *)sender {
+    
+    [myLabel removeFromSuperview];
+    myLabel = [[UILabel alloc] initWithFrame:CGRectMake(100, 100, 250, 40)];
+    myLabel.text = @"Hello There";
+    myLabel.textColor = [UIColor blackColor];
+    myLabel.font=[UIFont fontWithName:@"Marker Felt" size:15];
+    [self.view addSubview:myLabel];
+    //[self.vwForImage setUserInteractionEnabled:YES];
+    [myLabel setUserInteractionEnabled:YES];
+    UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanGesture:)];
+    [panGesture setMinimumNumberOfTouches:1];
+    [panGesture setMaximumNumberOfTouches:1];
+    
+    [myLabel addGestureRecognizer:panGesture];
+    panGesture = nil;
+
+}
+
+-(void)handlePanGesture:(id)sender{
+    
+    CGPoint translatedPoint = [(UIPanGestureRecognizer*)sender translationInView:self.view];
+    if([(UIPanGestureRecognizer*)sender state] == UIGestureRecognizerStateBegan) {
+        firstX = [[sender view] center].x;
+        firstY = [[sender view] center].y;
+    }
+    translatedPoint = CGPointMake(firstX+translatedPoint.x, firstY+translatedPoint.y);
+    [[sender view] setCenter:translatedPoint];
+}
 @end
